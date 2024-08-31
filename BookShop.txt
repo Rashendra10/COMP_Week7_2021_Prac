@@ -1,0 +1,80 @@
+set customerResponse to "Y"
+while customerResponse is "Y"
+  // initialise totals and flags for each new customer
+  set subTotal, total, cashTendered, change, creditCard to 0
+  set cancelled, ccPayment, cashPayment, invalidPayment to false
+  set bookResponse to "Y"
+
+  // obtain product details
+  "Enter book price and quantity."
+  while bookResponse is "Y"
+    get unitPrice
+    validate unitPrice
+
+    get quantity
+    validate quantity
+
+    // calculate running subtotal
+    set subTotal to subTotal + quantity * unitPrice;
+    "Enter another book? Y/N"
+    get bookResponse
+  endloop
+
+  set total to subTotal
+
+  // obtain payment information for customer transaction
+  "Total Due is $" total
+  "How do you wish to pay? Credit Card[CC], Cash[C], Cancel[X]"
+  get payMethod
+
+  // pay by credit card
+  if payMethod is "CC"
+    set ccPayment to true
+    set creditCard to subTotal
+  else if payMethod is "C" // pay by cash
+    set cashPayment to true
+    "Enter cash tendered: "
+    get cashTendered
+    validate cashTendered
+    if cashTendered is greater or equal to subTotal // determine change due to customer
+      set change to cashTendered - subTotal
+    else  // cash does not cover entire transaction cost
+      set subTotal to subTotal - cashTendered;
+      "The cash was not sufficient to cover the transactoin total."
+      "Amount outstanding: "  subTotal
+      "The outstanding amount must be paid by Credit Card, or cancel the transaction."
+      "Credit Card[CC], Cancel[X]"
+      get payMethod
+      if payMethod is "CC"
+        set ccPayment to true
+        set creditCard to subTotal
+      else if payMethod is "X"
+        set cancelled to true
+      else
+        "Invalid payment method."
+    else if payMethod is "X"
+      set cancelled to true
+    else
+      set invalidPayment to true
+      "Invalid payment method."
+
+  // generate receipt summary
+  if payMethod not equal to "X" and invalidPayment is false
+    "Purchase Summary"
+    "Total Due:" total
+
+    if ccPayment is true
+      "Credit Card:" creditCard
+    if cashPayment is true
+      "Cash:" cashTendered
+      "Change:" change
+
+    set total to 0
+    "Owing:" total
+
+  if cancelled is true
+    "Transaction cancelled at customer request."
+
+  "Another Customer? Y/N"
+  get customerResponse
+endloop
